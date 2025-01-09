@@ -1,0 +1,24 @@
+services:
+  task_manager_api:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  postgres:
+    image: postgres:16.1-alpine3.19
+    restart: always
+    env_file:
+      - ./.database.env
+    volumes:
+      - ./postgres/db:/var/lib/postgresql/data
+      - ./postgres/init_tables.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

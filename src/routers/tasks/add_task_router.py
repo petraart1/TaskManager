@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from models.user import User
-from models.task import Task
-from database import database
+
+from src.models import User
+from src.models import Task
+from src.database import database
 
 
 __all__ = [

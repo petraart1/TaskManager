@@ -1,14 +1,12 @@
-import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 
 from .config import DATABASE
 
-from models.user import User
-from models.task import Task
+from src.models import User
+from src.models import Task
 
 
 __all__ = [
-    #"get_connection",
     "register",
     "auth",
     "remove_user",
@@ -28,11 +26,6 @@ pool = SimpleConnectionPool(
     port=DATABASE["port"]
 )
 
-
-'''def get_connection():
-    return psycopg2.connect(**DATABASE)'''
-
-
 def register(username: str, password: str) -> int:
     users = "users"
 
@@ -43,7 +36,7 @@ def register(username: str, password: str) -> int:
             cursor.execute(f"""
                 INSERT INTO {users} (username, password)
                 VALUES (%s, %s)
-                RETURNING user_id;
+                RETURNING id;
             """, (username, password))
 
             user_id = cursor.fetchone()[0]
@@ -71,9 +64,21 @@ def auth(username: str, password: str) -> str:
         pool.putconn(connection)
 
 
-def remove_user():
+def remove_user(user_id: int):
     users = "users"
-    pass
+
+    connection = pool.getconn()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM {users} WHERE id = {user_id};")
+
+            connection.commit()
+
+    finally:
+        pool.putconn(connection)
+
+    return "User was removed"
 
 
 def get_all_users() -> list:
@@ -83,15 +88,15 @@ def get_all_users() -> list:
 
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT user_id, username, password FROM {users};")
-            users = cursor.fetchall()
+            cursor.execute(f"SELECT id, username, password FROM {users};")
+            user_list = cursor.fetchall()
 
             connection.commit()
 
     finally:
         pool.putconn(connection)
 
-    return [{"id": user[0], "username": user[1], "password": user[2]} for user in users]
+    return [{"id": user[0], "username": user[1], "password": user[2]} for user in user_list]
 
 
 def add_task(user: User, task: Task) -> str:
@@ -101,8 +106,8 @@ def add_task(user: User, task: Task) -> str:
 
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"INSERT INTO {tasks} (user_id, title, description, status) VALUES (%s, %s, %s, %s);",
-                           (str(user.id), task.title, task.description, task.status))
+            cursor.execute(f"""INSERT INTO {tasks} (id, title, description, status) 
+            VALUES (%s, %s, %s, %s);""", (str(user.id), task.title, task.description, task.status))
 
             connection.commit()
     finally:
@@ -111,8 +116,21 @@ def add_task(user: User, task: Task) -> str:
     return "task was added"
 
 
-def remove_task():
-    pass
+def remove_task(task_id: int) -> str:
+    tasks = "tasks"
+
+    connection = pool.getconn()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM {tasks} WHERE id = {task_id};")
+
+            connection.commit()
+
+    finally:
+        pool.putconn(connection)
+
+    return "Task was removed"
 
 
 def get_user_tasks(user_id: int) -> list:
@@ -122,7 +140,7 @@ def get_user_tasks(user_id: int) -> list:
 
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM {tasks} WHERE user_id = {user_id};")
+            cursor.execute(f"SELECT * FROM {tasks} WHERE id = {user_id};")
             task_list = cursor.fetchall()
 
             connection.commit()
@@ -140,7 +158,7 @@ def get_all_tasks() -> list:
 
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT task_id, user_id, title, description, status FROM {tasks};")
+            cursor.execute(f"SELECT id, user_id, title, description, status FROM {tasks};")
             task_list = cursor.fetchall()
 
             connection.commit()

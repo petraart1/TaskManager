@@ -1,12 +1,16 @@
 from fastapi import APIRouter
-from models.user import User
-from database import database
+
+from src.models import User
+from src.database import database
+
 
 __all__ = [
     "login_router"
 ]
 
+
 login_router = APIRouter()
+
 
 @login_router.get("/login")
 async def login(username: str, password: str) -> str:

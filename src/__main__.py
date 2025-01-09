@@ -1,11 +1,11 @@
-from app import app
+from src.app import app
 
 import asyncio
 import uvicorn
 
 
 async def main() -> None:
-    server_config = uvicorn.Config(app, host="127.0.0.1", port=8000)
+    server_config = uvicorn.Config(app, host="0.0.0.0", port=8000)
     server = uvicorn.Server(server_config)
 
     await server.serve()

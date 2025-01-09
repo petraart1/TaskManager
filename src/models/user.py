@@ -2,6 +2,7 @@ __all__ = [
     "User"
 ]
 
+
 class User:
     _id: int
     _username: str

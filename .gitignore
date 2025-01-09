@@ -1,7 +1,0 @@
-.gitignore
-.venv
-.idea/
-
-src/database/config.py
-
-test_main.http

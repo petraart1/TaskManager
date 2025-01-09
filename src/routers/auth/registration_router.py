@@ -1,12 +1,16 @@
 from fastapi import APIRouter
-from models.user import User
-from database import database
+
+from src.models import User
+from src.database import database
+
 
 __all__ = [
     "registration_router"
 ]
 
+
 registration_router = APIRouter()
+
 
 @registration_router.get("/register")
 async def registration(username: str, password: str) -> dict[str, int | str]:

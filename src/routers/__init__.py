@@ -9,10 +9,13 @@ from .tasks.add_task_router import add_task_router
 from .tasks.delete_task_router import delete_task_router
 
 from .users import get_all_users_router
+from .users import remove_user_router
+
 
 __all__ = [
     "root_router"
 ]
+
 
 root_router = APIRouter(prefix="/api")
 root_router.include_router(login_router)
@@ -24,3 +27,4 @@ root_router.include_router(add_task_router)
 root_router.include_router(delete_task_router)
 
 root_router.include_router(get_all_users_router)
+root_router.include_router(remove_user_router)
